@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { VNode } from '@dojo/framework/widget-core/interfaces';
-import { fromMarkdown } from './compile';
+import { fromMarkdown, toHyperscript } from './compile';
 
 const README_URL = 'https://raw.githubusercontent.com/dojo/examples/master/README.md';
 
@@ -12,6 +12,8 @@ export interface ExampleMeta {
 	overview: VNode;
 	sandbox?: boolean;
 }
+
+const process = (markdown: string) => toHyperscript(fromMarkdown(markdown))
 
 export default async function(): Promise<ExampleMeta[]> {
 	const response = await fetch(README_URL);
@@ -31,11 +33,11 @@ export default async function(): Promise<ExampleMeta[]> {
 			.filter((value) => value);
 		const exampleName = data[1].replace(/((^\[Link\]\(\.\/)|(\)$))/g, '');
 		return {
-			[keys[0]]: fromMarkdown(data[0], {}),
-			[keys[1]]: fromMarkdown(data[1], {}),
-			[keys[2]]: fromMarkdown(data[2], {}),
+			[keys[0]]: process(data[0]),
+			[keys[1]]: process(data[1]),
+			[keys[2]]: process(data[2]),
 			[keys[3]]: data.length === keys.length,
-			[keys[4]]: fromMarkdown(data.length === keys.length ? data[4] : data[3], {}),
+			[keys[4]]: process(data.length === keys.length ? data[4] : data[3]),
 			exampleName
 		};
 	});
